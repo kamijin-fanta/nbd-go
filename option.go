@@ -41,7 +41,7 @@ const (
 
 type RequestOption interface {
 	Code() optionType
-	ReadFrom(rw *ProtocolReaderWriter, l uint32) errno
+	ReadFrom(rw *ProtocolReaderWriter, l uint32) Errno
 	WriteTo(rw *ProtocolReaderWriter)
 }
 
@@ -58,17 +58,17 @@ func (o *optReqInfo) Code() optionType {
 	return cOptInfo
 }
 
-func (o *optReqInfo) ReadFrom(rw *ProtocolReaderWriter, l uint32) errno {
+func (o *optReqInfo) ReadFrom(rw *ProtocolReaderWriter, l uint32) Errno {
 	nlen := rw.Uint32()
 	if l < 6 || nlen > l-6 {
-		return errInvalid
+		return ErrInvalid
 	}
 	name := make([]byte, nlen)
 	rw.Read(name)
 	o.name = string(name)
 	nreqs := rw.Uint16()
 	if (l-nlen-6)%2 != 0 || (l-nlen-6)/2 != uint32(nreqs) {
-		return errInvalid
+		return ErrInvalid
 	}
 	for ; nreqs > 0; nreqs-- {
 		o.reqs = append(o.reqs, rw.Uint16())
@@ -108,7 +108,7 @@ func OptionReplyWriteTo(rw *ProtocolReaderWriter, option optionType, reply Reply
 	by := b.Bytes()
 	rw.WriteUint32(uint32(len(by)))
 	rw.Write(by)
-	fmt.Printf("OptionReplyWriteTo: %d %v\n", len(by), by)
+	fmt.Printf("OptionReplyWriteTo: type=%d code=%d len=%d buff=%v\n", option, reply.Code(), len(by), by)
 }
 
 type repAck struct{}
@@ -207,3 +207,13 @@ func (r *infoBlockSize) ReadFrom(rw *ProtocolReaderWriter, l uint32) {
 	r.preferred = rw.Uint32()
 	r.max = rw.Uint32()
 }
+
+type repError struct{
+	errorCode Errno
+}
+
+func (r *repError) Code() optionReplyCode { return optionReplyCode(r.errorCode) }
+
+func (r *repError) WriteTo(rw *ProtocolReaderWriter) {}
+
+func (r *repError) ReadFrom(rw *ProtocolReaderWriter, l uint32) {}

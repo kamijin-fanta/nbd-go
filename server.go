@@ -33,6 +33,10 @@ func ListenAndServe(ctx context.Context, network, addr string, factory DeviceCon
 				return
 			}
 			err = Serve(conn, deviceConnection)
+			if err != nil {
+				fmt.Printf("error on transmission %v\n", err)
+				return
+			}
 		}()
 	}
 }
@@ -59,13 +63,17 @@ func Handshake(conn net.Conn, deviceConnection DeviceConnection) error {
 		for {
 			code, o, err := e.ReadOption()
 			if err != 0 {
-				// todo reply error
+				OptionReplyWriteTo(e, code, &repError{err})
 				continue
 			}
 			switch o := o.(type) {
 			// todo more options
 			case *optReqInfo:
-				name, description, totalSize, blockSize := deviceConnection.Info(o.name)
+				name, description, totalSize, blockSize, errno := deviceConnection.Info(o.name)
+				if errno != 0 {
+					OptionReplyWriteTo(e, code, &repError{errno})
+					continue
+				}
 
 				OptionReplyWriteTo(e, code, &infoExport{
 					totalSize,
@@ -110,7 +118,6 @@ func Serve(conn net.Conn, deviceConnection DeviceConnection) error {
 					rw.WriteErrResponse(req.handle, EINVAL)
 					continue
 				}
-				fmt.Printf("cmdRead: %d %d\n", req.offset, req.offset+uint64(req.length))
 				buf, _ := deviceConnection.Read(req.offset, req.length) // todo error handle
 				(&simpleReply{0, req.handle, buf, 0}).WriteTo(rw)
 			case cmdWrite:

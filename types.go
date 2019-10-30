@@ -4,7 +4,7 @@ import "errors"
 
 type Error interface {
 	Error() string
-	Errno() Errno
+	Errno() Errornum
 }
 
 type request struct {
