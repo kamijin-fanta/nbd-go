@@ -137,9 +137,16 @@ func Serve(conn net.Conn, deviceConnection DeviceConnection) error {
 }
 
 func ConnectionWrapper(rw io.ReadWriter, f func(c *ProtocolReaderWriter)) (err error) {
+	sentinel := new(uint8)
+	defer func() {
+		if v := recover(); err != nil && v != sentinel {
+			panic(v)
+		}
+	}()
 	errorHandle := func(e error) {
 		if e != nil {
 			err = e
+			panic(sentinel)
 		}
 	}
 	prw := NewProtocolReaderWriter(rw, errorHandle)
