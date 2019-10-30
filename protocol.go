@@ -32,61 +32,65 @@ const (
 	cmdResize          = 8
 )
 
-type errno uint32
+type Errno uint32
 
 const (
-	_ errno = (1 << 31) + iota
-	errUnsup
-	errPolicy
-	errInvalid
-	errPlatform
-	errTLSReqd
-	errUnknown
-	errShutdown
-	errBlockSizeReqd
-	errTooBig
+	_ Errno = (1 << 31) + iota
+	ErrUnsup
+	ErrPolicy
+	ErrInvalid
+	ErrPlatform
+	ErrTLSReqd
+	ErrUnknown
+	ErrShutdown
+	ErrBlockSizeReqd
+	ErrTooBig
 )
 
-func (e errno) String() string {
+func (e Errno) String() string {
 	switch e {
-	case errUnsup:
+	case ErrUnsup:
 		return "ERR_UNSUP"
-	case errPolicy:
+	case ErrPolicy:
 		return "ERR_POLICY"
-	case errInvalid:
+	case ErrInvalid:
 		return "ERR_INVALID"
-	case errPlatform:
+	case ErrPlatform:
 		return "ERR_PLATFORM"
-	case errTLSReqd:
+	case ErrTLSReqd:
 		return "ERR_TLS_REQD"
-	case errUnknown:
+	case ErrUnknown:
 		return "ERR_UNKNOWN"
-	case errShutdown:
+	case ErrShutdown:
 		return "ERR_SHUTDOWN"
-	case errBlockSizeReqd:
+	case ErrBlockSizeReqd:
 		return "ERR_BLOCK_SIZE_REQD"
-	case errTooBig:
+	case ErrTooBig:
 		return "ERR_TOO_BIG"
 	default:
 		return "0x" + strconv.FormatUint(uint64(e), 16)
 	}
 }
 
-type Errno uint32
+func (e Errno) Error() string {
+	return fmt.Sprintf("nbd protocol error: %s", e.String())
+}
+
+type Errornum uint32
 
 // See https://manpages.debian.org/stretch/manpages-dev/errno.3.en.html for a
 // description of error numbers.
 const (
-	EPERM     Errno = 1
-	EIO       Errno = 5
-	ENOMEM    Errno = 12
-	EINVAL    Errno = 22
-	ENOSPC    Errno = 28
-	EOVERFLOW Errno = 75
-	ESHUTDOWN Errno = 108
+	EPERM     Errornum = 1
+	EIO       Errornum = 5
+	ENOMEM    Errornum = 12
+	EINVAL    Errornum = 22
+	ENOSPC    Errornum = 28
+	EOVERFLOW Errornum = 75
+	ESHUTDOWN Errornum = 108
 )
 
-var errStr = map[Errno]string{
+var errStr = map[Errornum]string{
 	EPERM:     "Operation not permitted",
 	EIO:       "Input/output error",
 	ENOMEM:    "Cannot allocate memory",
@@ -96,23 +100,23 @@ var errStr = map[Errno]string{
 	ESHUTDOWN: "Cannot send after transport endpoint shutdown",
 }
 
-func (e Errno) Error() string {
+func (e Errornum) Error() string {
 	if msg, ok := errStr[e]; ok {
 		return msg
 	}
 	return fmt.Sprintf("NBD_ERROR(%d)", uint32(e))
 }
 
-// Errno returns e.
-func (e Errno) Errno() Errno {
+// Errornum returns e.
+func (e Errornum) Errno() Errornum {
 	return e
 }
 
 type errf struct {
-	errno Errno
+	errno Errornum
 	error
 }
 
-func (e errf) Errno() Errno {
+func (e errf) Errno() Errornum {
 	return e.errno
 }

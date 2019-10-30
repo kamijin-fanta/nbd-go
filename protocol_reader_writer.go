@@ -86,7 +86,7 @@ func (rw *ProtocolReaderWriter) WriteUint64(v uint64) {
 	rw.Write(b[:])
 }
 
-func (rw *ProtocolReaderWriter) ReadOption() (optionType, interface{}, errno) {
+func (rw *ProtocolReaderWriter) ReadOption() (optionType, interface{}, Errno) {
 	magic := rw.Uint64()
 	if magic != optMagic && rw.handleError != nil {
 		rw.handleError(fmt.Errorf("invalid option magic 0x%x", magic))
@@ -94,7 +94,7 @@ func (rw *ProtocolReaderWriter) ReadOption() (optionType, interface{}, errno) {
 	option := optionType(rw.Uint32())
 	length := rw.Uint32()
 	if length > maxOptionLength {
-		return option, nil, errTooBig
+		return option, nil, ErrTooBig
 	}
 	var o RequestOption
 	switch option {
@@ -104,7 +104,7 @@ func (rw *ProtocolReaderWriter) ReadOption() (optionType, interface{}, errno) {
 		o = &optReqInfo{done: true}
 	}
 	if o == nil {
-		return option, nil, errUnsup
+		return option, nil, ErrUnsup
 	}
 	err := o.ReadFrom(rw, length)
 	return option, o, err

@@ -35,25 +35,25 @@ type MemoryDeviceConnection struct {
 	buff []byte
 }
 
-func (m *MemoryDeviceConnection) ExportList() ([]string, error) {
+func (m *MemoryDeviceConnection) ExportList() ([]string, nbd.Errno) {
 	panic("implement me")
 }
 
-func (m *MemoryDeviceConnection) Info(export string) (name, description string, totalSize uint64, blockSize uint32) {
-	return "default", "default exports", m.size, 4096 // 4K Block
+func (m *MemoryDeviceConnection) Info(export string) (name, description string, totalSize uint64, blockSize uint32, errno nbd.Errno) {
+	return "default", "default exports", m.size, 4096, 0 // 4K Block
 }
 
-func (m *MemoryDeviceConnection) Read(offset uint64, length uint32) ([]byte, error) {
-	return m.buff[offset : offset+uint64(length)], nil
+func (m *MemoryDeviceConnection) Read(offset uint64, length uint32) ([]byte, nbd.Errno) {
+	return m.buff[offset : offset+uint64(length)], 0
 }
 
-func (m *MemoryDeviceConnection) Write(offset uint64, buff []byte) error {
+func (m *MemoryDeviceConnection) Write(offset uint64, buff []byte) nbd.Errno {
 	target := m.buff[offset : offset+uint64(len(buff))]
 	copy(target, buff)
-	return nil
+	return 0
 }
 
-func (m *MemoryDeviceConnection) Flush() error {
+func (m *MemoryDeviceConnection) Flush() nbd.Errno {
 	// nop
-	return nil
+	return 0
 }
