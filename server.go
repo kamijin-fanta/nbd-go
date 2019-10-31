@@ -118,14 +118,22 @@ func Serve(conn net.Conn, deviceConnection DeviceConnection) error {
 					rw.WriteErrResponse(req.handle, EINVAL)
 					continue
 				}
-				buf, _ := deviceConnection.Read(req.offset, req.length) // todo error handle
+				buf, err := deviceConnection.Read(req.offset, req.length)
+				if err != 0 {
+					rw.WriteErrResponse(req.handle, err)
+					continue
+				}
 				(&simpleReply{0, req.handle, buf, 0}).WriteTo(rw)
 			case cmdWrite:
 				if req.length == 0 {
 					rw.WriteErrResponse(req.handle, EINVAL)
 					continue
 				}
-				deviceConnection.Write(req.offset, req.data) // todo error handle
+				err := deviceConnection.Write(req.offset, req.data)
+				if err != 0 {
+					rw.WriteErrResponse(req.handle, err)
+					continue
+				}
 				(&simpleReply{0, req.handle, nil, 0}).WriteTo(rw)
 			case cmdDisc:
 				return
@@ -134,7 +142,11 @@ func Serve(conn net.Conn, deviceConnection DeviceConnection) error {
 					rw.WriteErrResponse(req.handle, EINVAL)
 					continue
 				}
-				deviceConnection.Flush()
+				err := deviceConnection.Flush()
+				if err != 0 {
+					rw.WriteErrResponse(req.handle, err)
+					continue
+				}
 				(&simpleReply{0, req.handle, nil, 0}).WriteTo(rw)
 			default:
 				rw.WriteErrResponse(req.handle, EINVAL)

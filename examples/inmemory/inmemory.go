@@ -43,17 +43,17 @@ func (m *MemoryDeviceConnection) Info(export string) (name, description string, 
 	return "default", "default exports", m.size, 4096, 0 // 4K Block
 }
 
-func (m *MemoryDeviceConnection) Read(offset uint64, length uint32) ([]byte, nbd.Errno) {
+func (m *MemoryDeviceConnection) Read(offset uint64, length uint32) ([]byte, nbd.Errornum) {
 	return m.buff[offset : offset+uint64(length)], 0
 }
 
-func (m *MemoryDeviceConnection) Write(offset uint64, buff []byte) nbd.Errno {
+func (m *MemoryDeviceConnection) Write(offset uint64, buff []byte) nbd.Errornum {
 	target := m.buff[offset : offset+uint64(len(buff))]
 	copy(target, buff)
 	return 0
 }
 
-func (m *MemoryDeviceConnection) Flush() nbd.Errno {
+func (m *MemoryDeviceConnection) Flush() nbd.Errornum {
 	// nop
 	return 0
 }
