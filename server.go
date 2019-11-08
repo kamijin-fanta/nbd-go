@@ -162,8 +162,6 @@ func ConnectionWrapper(rw io.ReadWriter, f func(c *ProtocolReaderWriter)) (err e
 		if v := recover(); err == nil && v != sentinel {
 			if e, ok := v.(error); ok {
 				err = e
-			} else {
-				panic(v)
 			}
 		}
 	}()
