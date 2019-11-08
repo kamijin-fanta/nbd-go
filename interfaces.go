@@ -11,4 +11,5 @@ type DeviceConnection interface {
 	Read(offset uint64, length uint32) ([]byte, Errornum)
 	Write(offset uint64, buff []byte) Errornum
 	Flush() Errornum
+	Close()
 }
