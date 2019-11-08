@@ -24,6 +24,7 @@ func ListenAndServe(ctx context.Context, network, addr string, factory DeviceCon
 		deviceConnection := factory.NewClient(conn.RemoteAddr())
 		go func() {
 			defer func() {
+				deviceConnection.Close()
 				conn.Close()
 				wg.Done()
 			}()
@@ -158,8 +159,12 @@ func Serve(conn net.Conn, deviceConnection DeviceConnection) error {
 func ConnectionWrapper(rw io.ReadWriter, f func(c *ProtocolReaderWriter)) (err error) {
 	sentinel := new(uint8)
 	defer func() {
-		if v := recover(); err != nil && v != sentinel {
-			panic(v)
+		if v := recover(); err == nil && v != sentinel {
+			if e, ok := v.(error); ok {
+				err = e
+			} else {
+				panic(v)
+			}
 		}
 	}()
 	errorHandle := func(e error) {

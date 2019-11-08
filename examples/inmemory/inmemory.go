@@ -57,3 +57,7 @@ func (m *MemoryDeviceConnection) Flush() nbd.Errornum {
 	// nop
 	return 0
 }
+
+func (m *MemoryDeviceConnection) Close() {
+	m.buff = nil
+}
