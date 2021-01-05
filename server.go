@@ -1,22 +1,17 @@
 package nbd
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"net"
 	"sync"
 )
 
-func ListenAndServe(ctx context.Context, network, addr string, factory DeviceConnectionFactory) error {
-	l, err := net.Listen(network, addr)
-	if err != nil {
-		return err
-	}
+func ListenAndServe(listen net.Listener, factory DeviceConnectionFactory) error {
 	var wg sync.WaitGroup
 	defer wg.Wait()
 	for {
-		conn, err := l.Accept()
+		conn, err := listen.Accept()
 		if err != nil {
 			return err
 		}

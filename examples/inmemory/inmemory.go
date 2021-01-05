@@ -1,10 +1,10 @@
 package main
 
 import (
-	"context"
 	"fmt"
-	"github.com/kamijin-fanta/nbd-go"
 	"net"
+
+	"github.com/kamijin-fanta/nbd-go"
 )
 
 func main() {
@@ -13,7 +13,12 @@ func main() {
 
 	var factory nbd.DeviceConnectionFactory = &MemoryDeviceFactory{}
 
-	err := nbd.ListenAndServe(context.Background(), network, addr, factory)
+	lis, err := net.Listen(network, addr)
+	if err != nil {
+		panic(err)
+	}
+
+	err = nbd.ListenAndServe(lis, factory)
 	if err != nil {
 		panic(err)
 	}

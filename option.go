@@ -3,7 +3,6 @@ package nbd
 import (
 	"bytes"
 	"errors"
-	"fmt"
 )
 
 type optionType uint32
@@ -108,7 +107,6 @@ func OptionReplyWriteTo(rw *ProtocolReaderWriter, option optionType, reply Reply
 	by := b.Bytes()
 	rw.WriteUint32(uint32(len(by)))
 	rw.Write(by)
-	fmt.Printf("OptionReplyWriteTo: type=%d code=%d len=%d buff=%v\n", option, reply.Code(), len(by), by)
 }
 
 type repAck struct{}
@@ -208,7 +206,7 @@ func (r *infoBlockSize) ReadFrom(rw *ProtocolReaderWriter, l uint32) {
 	r.max = rw.Uint32()
 }
 
-type repError struct{
+type repError struct {
 	errorCode Errno
 }
 
